@@ -20,7 +20,7 @@ def main():
     ext = BeancountEnvelope(entries, options_map, None)
     df1, df2, df3 = ext.envelope_tables()
     print(df1)
-    print(df2)
+    print(df2.to_string())
     print(df3)
 
 
