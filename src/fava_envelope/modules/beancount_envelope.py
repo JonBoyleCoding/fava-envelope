@@ -22,8 +22,6 @@ from beancount.query import query
 from beancount.core.data import Custom
 from beancount.parser import options
 
-from dateutil.relativedelta import relativedelta
-
 class BeancountEnvelope:
 
     def __init__(self, entries, options_map,currency):
@@ -153,16 +151,22 @@ class BeancountEnvelope:
                 overspent = Decimal(0.00)
                 funds_to_cover = Decimal(0.00)
                 for index2, row in self.envelope_df.iterrows():
-                    if row[months[index-1],'available'] < Decimal(0.00):
+                    if row[months[index - 1], 'available'] < Decimal(0.00):
                         if self.negative_rollover:
-                            current_available = Decimal(row[months[index], 'available'])
+                            current_available = Decimal(
+                                row[months[index], 'available']
+                            )
                             if current_available < Decimal(0.00):
                                 overspent += current_available
                         else:
-                            overspent += Decimal(row[months[index-1], 'available'])
+                            overspent += Decimal(
+                                row[months[index - 1], 'available']
+                            )
 
                     if row[months[index], 'available'] > Decimal(0.00):
-                        funds_to_cover += Decimal(row[months[index], 'available'])
+                        funds_to_cover += Decimal(
+                            row[months[index], 'available']
+                        )
 
                 self.income_df.loc["Overspent", month] = overspent
                 self.income_df.loc["Funds to Cover", month] = funds_to_cover
@@ -183,7 +187,8 @@ class BeancountEnvelope:
                     self.income_df.loc["Budgeted", prev_month]
 
                 if not self.negative_rollover:
-                    self.income_df.loc["Avail Income", month] = self.income_df.loc["Overspent", prev_month]
+                    self.income_df.loc["Avail Income", month] = \
+                        self.income_df.loc["Overspent", prev_month]
 
         # Set Budgeted in the future
         for index, month in enumerate(months):
@@ -258,10 +263,14 @@ class BeancountEnvelope:
                 if posting.account == "Income:Salary":
                     next_month_date = entry.date + relativedelta(months=1)
 
-                    if next_month_date.year > self.date_end.year or (next_month_date.year == self.date_end.year and next_month_date.month > self.date_end.month):
+                    if next_month_date.year > self.date_end.year or \
+                            (next_month_date.year == self.date_end.year and
+                             next_month_date.month > self.date_end.month):
                         continue
                     else:
-                        balances[account][(next_month_date.year, next_month_date.month)].add_position(posting)
+                        balances[account][
+                            (next_month_date.year, next_month_date.month)
+                        ].add_position(posting)
                 else:
                     # TODO
                     balances[account][month].add_position(posting)

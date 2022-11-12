@@ -56,7 +56,8 @@ class EnvelopeBudget(FavaExtensionBase):
                 "Amount": self.income_tables[month]["Avail Income"]
             })
             income_table_rows.append({
-                "Name": "Overspent in month" if self.module.negative_rollover else "Overspent in prev month",
+                "Name": "Overspent in month" if self.module.negative_rollover
+                else "Overspent in prev month",
                 "Amount": -self.income_tables[month]["Overspent"]
             })
             income_table_rows.append({
