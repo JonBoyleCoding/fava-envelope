@@ -12,6 +12,7 @@ class EnvelopeBudget(FavaExtensionBase):
     '''
     '''
     report_title = "Envelope Budget"
+    negative_rollover = False
 
     def generate_budget_df(self,currency):
         self.currency=currency
@@ -21,6 +22,7 @@ class EnvelopeBudget(FavaExtensionBase):
             self.currency
         )
         self.income_tables, self.envelope_tables, self.currency = self.module.envelope_tables()
+        negative_rollover = module.negative_rollover
 
     def get_budgets_months_available(self,currency):
         self.generate_budget_df(currency)
@@ -56,7 +58,7 @@ class EnvelopeBudget(FavaExtensionBase):
                 "Amount": self.income_tables[month]["Avail Income"]
             })
             income_table_rows.append({
-                "Name": "Overspent in month" if self.module.negative_rollover
+                "Name": "Overspent in month" if self.negative_rollover
                 else "Overspent in prev month",
                 "Amount": -self.income_tables[month]["Overspent"]
             })
