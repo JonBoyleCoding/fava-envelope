@@ -22,7 +22,7 @@ class EnvelopeBudget(FavaExtensionBase):
             self.currency
         )
         self.income_tables, self.envelope_tables, self.currency = self.module.envelope_tables()
-        negative_rollover = module.negative_rollover
+        negative_rollover = self.module.negative_rollover
 
     def get_budgets_months_available(self,currency):
         self.generate_budget_df(currency)
