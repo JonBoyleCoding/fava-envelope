@@ -24,9 +24,7 @@ from beancount.core.data import Custom
 from beancount.parser import options
 
 class BeancountEnvelope:
-
-    def __init__(self, entries, options_map,currency):
-
+    def __init__(self, entries, options_map, currency):
         self.entries = entries
         self.options_map = options_map
         self.currency = currency
@@ -98,7 +96,6 @@ class BeancountEnvelope:
         return start_date, budget_accounts, mappings, income_accounts
 
     def envelope_tables(self):
-
         months = []
         date_current = self.date_start
         while date_current < self.date_end:
@@ -136,13 +133,23 @@ class BeancountEnvelope:
         for index, row in self.envelope_df.iterrows():
             for index2, month in enumerate(months):
                 if index2 == 0:
-                    row[month, 'available'] = row[month, 'budgeted'] + row[month, 'activity']
+                    self.envelope_df[month, "available"][index] = (
+                        row[month, "budgeted"] + row[month, "activity"]
+                    )
                 else:
-                    prev_available = row[months[index2-1],'available']
+                    prev_available = self.envelope_df[
+                        months[index2 - 1], "available"
+                    ][index]
                     if prev_available > 0 or self.negative_rollover:
-                        row[month, 'available'] = prev_available + row[month, 'budgeted'] + row[month, 'activity']
+                        self.envelope_df[month, "available"][index] = (
+                            prev_available
+                            + row[month, "budgeted"]
+                            + row[month, "activity"]
+                        )
                     else:
-                        row[month, 'available'] = row[month, 'budgeted'] + row[month, 'activity']
+                        self.envelope_df[month, "available"][index] = (
+                            row[month, "budgeted"] + row[month, "activity"]
+                        )
 
         # Set overspent
         for index, month in enumerate(months):
@@ -211,14 +218,12 @@ class BeancountEnvelope:
         return self.income_df, self.envelope_df, self.currency
 
     def _calculate_budget_activity(self):
-
         # Accumulate expenses for the period
         balances = collections.defaultdict(
             lambda: collections.defaultdict(inventory.Inventory))
         all_months = set()
 
         for entry in data.filter_txns(self.entries):
-
             # Check entry in date range
             if entry.date < self.date_start or entry.date > self.date_end:
                 continue
@@ -238,7 +243,6 @@ class BeancountEnvelope:
                 continue
 
             for posting in entry.postings:
-
                 account = posting.account
                 for regexp, target_account in self.mappings:
                     if regexp.match(account):
