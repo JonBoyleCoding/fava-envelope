@@ -123,7 +123,7 @@ class BeancountEnvelope:
         rows = query.run_query(self.entries, self.options_map, query_str, numberify=True)
         for row in rows[1]:
             if any(regexp.match(row[0]) for regexp in self.budget_accounts):
-                if row[1] is not None:
+                if len(row) > 1 and row[1] is not None:
                     starting_balance += row[1]
         self.income_df[months[0]]["Avail Income"] += starting_balance
 
@@ -313,9 +313,15 @@ class BeancountEnvelope:
                 if account == "Income":
                     self.income_df.loc["Avail Income",month_str] = Decimal(temp)
                 else:
-                    self.envelope_df.loc[account,(month_str,'budgeted')] = Decimal(0.00)
-                    self.envelope_df.loc[account,(month_str,'activity')] = Decimal(temp)
-                    self.envelope_df.loc[account,(month_str,'available')] = Decimal(0.00)
+                    self.envelope_df.loc[account, (month_str, "budgeted")] = (
+                        Decimal(0.00)
+                    )
+                    self.envelope_df.loc[account, (month_str, "activity")] = (
+                        Decimal(temp)
+                    )
+                    self.envelope_df.loc[account, (month_str, "available")] = (
+                        Decimal(0.00)
+                    )
 
     def _calc_budget_budgeted(self):
         rows = {}
@@ -323,4 +329,21 @@ class BeancountEnvelope:
             if isinstance(e, Custom) and e.type == self.etype:
                 if e.values[0].value == "allocate":
                     month = f"{e.date.year}-{e.date.month:02}"
-                    self.envelope_df.loc[e.values[1].value,(month,'budgeted')] = Decimal(e.values[2].value)
+                    try:
+                        _ = self.envelope_df.loc[
+                            e.values[1].value, (month, "budgeted")
+                        ]
+                    except KeyError:
+                        self.envelope_df.loc[
+                            e.values[1].value, (month, "budgeted")
+                        ] = Decimal(0.00)
+
+                    self.envelope_df.loc[
+                        e.values[1].value, (month, "budgeted")
+                    ] = Decimal(
+                        self.envelope_df.loc[
+                            e.values[1].value, (month, "budgeted")
+                        ]
+                    ) + Decimal(
+                        e.values[2].value
+                    )
